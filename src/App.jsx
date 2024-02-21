@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from '/vite.svg';
-import './index.css';
 
 function App() {
   const [items, setItems] = useState([]);
   const [names, setNames] = useState('');
+  const [errorMessage, setErrorMessage] = useState(false);
 
   useEffect(() => {
     const storedItems = localStorage.getItem('items');
-    if(storedItems){
+    if (storedItems) {
       setItems(JSON.parse(storedItems));
     }
   }, []);
@@ -20,12 +18,21 @@ function App() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const fakeId = Date.now();
-    const newNames = { id: fakeId, name: names };
-    const updatedItems = [...items, newNames];
-    setItems(updatedItems);
-    setNames('');
+    if (names.trim() !== '') {
+      const fakeId = Date.now();
+      const newNames = { id: fakeId, name: names };
+      const updatedItems = [...items, newNames];
+      setItems(updatedItems);
+      setNames('');
+    }
+    else{
+      setErrorMessage(true);
+      setTimeout(()=>{
+        setErrorMessage(false)
+      },3000)
+    }
   };
+
 
   const clearItems = (id) => {
     const toBeCleared = items.filter((item) => item.id !== id);
@@ -34,8 +41,8 @@ function App() {
 
   return (
     <>
-      <div className='form-wrapper' onSubmit={handleSubmit}>
-        <form className='form'>
+      <div className='form-wrapper'>
+        <form className='form' onSubmit={handleSubmit}>
           <label htmlFor='items' className='form-label'>
             <h4>add items</h4>
           </label>
@@ -54,23 +61,29 @@ function App() {
           </button>
         </form>
       </div>
-      {items.map((item) => {
-        const { id, name } = item;
-        return (
+
+      {errorMessage && (        
+          <p style={{padding:'10px', textAlign:'center', textTransform:'capitalize'}} className='alert-danger'>please add something</p>
+      )}
+
+      <div>
+        {items.map((item) => (
           <div
             style={{
-              width:'80%',
+              width: '80%',
               justifyContent: 'space-between',
               display: 'flex',
               margin: '40px auto',
             }}
-            key={id}
+            key={item.id}
           >
-            <h4>{name}</h4>
-            <button className="btn" onClick={()=>clearItems(id)}>clear item</button>
+            <h4>{item.name}</h4>
+            <button className='btn' onClick={() => clearItems(item.id)}>
+              clear item
+            </button>
           </div>
-        );
-      })}
+        ))}
+      </div>
     </>
   );
 }
